@@ -8,6 +8,9 @@ from pygame.transform import flip, rotate
 
 WIDTH = 801
 HEIGHT = 601
+SCORE = 0
+APPLES = []
+N_APPLES = 100
 
 LINE_COLOR = 'purple'
 CELL_SIZE = 20
@@ -108,10 +111,11 @@ def draw():
         screen.draw.line(start, end, LINE_COLOR)
 
     pac.draw()
-    apple.draw()
+    for apple in APPLES:
+        apple.draw()
 
     screen.draw.text(
-        'Score: %d' % 1,
+        'Score: %d' % SCORE,
         color='white',
         topright=(WIDTH - 5, 5)
     )
@@ -197,7 +201,7 @@ class Apple:
     def draw(self):
         screen.blit(images.apple, screen_rect(self.pos))
 
-def place_apple():
+def place_apple(apple):
     pos = (
             random.randrange(TILES_W),
             random.randrange(TILES_H)
@@ -208,7 +212,6 @@ def place_apple():
 generate_maze()
 pac = Pac()
 pac.topleft = (0, 0)
-apple = Apple()
 
 KEYBINDINGS = {
     keys.LEFT: Direction.LEFT,
@@ -225,11 +228,14 @@ def tick():
     if not pac.alive:
         return
     pac.move_passive()
-    if (pac.pos[0] - apple.pos[0])**2 + (pac.pos[1] - apple.pos[1])**2 < 1.0:
-        stop()
+    global SCORE
+    for apple in APPLES:
+        if (pac.pos[0] - apple.pos[0])**2 + (pac.pos[1] - apple.pos[1])**2 < 1.0:
+            APPLES.remove(apple)
+            SCORE += 1
 
 def start():
-    interval = 0.15
+    interval = 0.2
     clock.unschedule(tick)
     clock.schedule_interval(tick, interval)
 
@@ -244,5 +250,8 @@ def reset():
     place_apple()
     start()
 
-place_apple()
+for i in range(N_APPLES):
+    APPLES.append(Apple())
+for apple in APPLES:
+    place_apple(apple)
 start()
